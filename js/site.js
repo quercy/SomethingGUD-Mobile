@@ -6,17 +6,8 @@ $(document).ready(function() {
     var menu = '<div data-role="panel" id="menu-left" data-display="push" data-theme="a" data-position="left"> <ul data-role="listview"> <li><a href="#browse" data-rel="close">Browse Items</a></li> <li><a href="#cart" data-rel="close">Shopping cart</a></li> <li><a href="#" data-rel="close">Orders</a></li> <li><a href="#" data-rel="close">Account Information</a></li> </ul> </div>';
     var $sign_in_form = $("#sign-in-form");
     var $register_form = $("#register-form");
-    setTimeout(function () {   window.scrollTo(0, 1); }, 1000);
-    //var submitLogin = function(data, callback) {
-    //    console.log(data);
-    //    callback();
-    //    return true;
-    //};
-    //
-    //$(document).one('pagebeforecreate', function () {
-    //    $.mobile.pageContainer.prepend(menu);
-    //    $("#menu-left").panel();
-    //});
+    //console.log("cookies are " + document.cookie);
+    setTimeout(function () {   window.scrollTo(0, 1); }, 1000); // supposed to hide safart navbar
 
     $(document).on('pagebeforecreate', function() {
         //alert("pagebeforecreate");
@@ -30,7 +21,7 @@ $(document).ready(function() {
 
 
     $sign_in_form.on('login', function() {
-        BrowseController();
+        //BrowseController();
     });
 
     var BrowseController = (function() {
@@ -41,11 +32,8 @@ $(document).ready(function() {
         var $change_date_link = $("#change-date");
         var $date_pick_div = $("#pick-date");
 
-        // constructor -- this isn't the JS OO way to do it, but I'll figure it out later
         var constructor = function () {
-            //$date_display.data('','');
-            console.log(shopping_date.toDateString());
-            //update_date(Date.now());
+            //console.log(shopping_date.toDateString());
             update_date();
             $date_pick_div.date({
                 onSelect: function(dateText) {
@@ -62,7 +50,6 @@ $(document).ready(function() {
         var update_date = function(date_string) {
             if(!(date_string == '' || date_string == undefined)) {
                 shopping_date = new Date(date_string);
-                console.log("trying to set date to " + date_string);
             }
             $date_display.text(shopping_date.toDateString());
         };
@@ -84,6 +71,94 @@ $(document).ready(function() {
         }
     }());
 
+    var LoginController = (function() {
+        var _this = this;
+
+        var constructor = function () {
+        };
+
+        var submitLogin = function(submit_data) {
+            $.ajax(
+                {
+                    beforeSend: function() { $.mobile.loading('show'); }, //Show spinner
+                    url: '',
+                    dataType: 'json',
+                    data: submit_data
+                }).
+                success(function(data) {
+                    // sign in
+                    $sign_in_form.trigger('login');
+                    // if server returns a session id, set it as the current cookie
+                    console.log('success' + data);
+                    data.session = "1234";
+                    Model.setKey(data.session);
+                    //document.cookie = "session=" + data.session;
+                }).
+                error( function(data) {
+                    console.log('error ' + data);
+                }).
+                always( function() {
+                    var data = {};
+                    data.session = "1234";
+                    Model.setKey(data.session);
+                    $sign_in_form.trigger('login');
+                    console.log('always');
+                    setTimeout(function() {
+                        $.mobile.loading('hide', {
+                        });
+                        $.mobile.navigate('#browse');
+                    }, 600);
+                });
+        };
+
+        constructor();
+
+        // Public methods
+        return {
+            login : function(_data) {
+                submitLogin(_data);
+            }
+        }
+    }());
+
+    var Model = (function() {
+        var _this = this;
+        var session_key;
+
+        var constructor = function () {
+            var try_session = getCookie("session");
+            console.log("session cookie is " + try_session);
+            if(try_session == undefined || try_session == "") {
+                $.mobile.navigate("#landing");
+            }
+            else {
+                session_key = try_session;
+                $.mobile.navigate("#browse");
+            }
+        };
+
+        var getCookie = function(name) {
+            var value = "; " + document.cookie;
+            var parts = value.split("; " + name + "=");
+            if (parts.length == 2) return parts.pop().split(";").shift();
+        };
+
+        constructor();
+
+        // Public methods
+        return {
+            setKey : function(key) {
+                console.log("setting key to " + key);
+                session_key = key;
+                document.cookie = "session=" + key;
+            },
+            getKey : function() {
+                return session_key;
+            }
+        }
+    }());
+
+
     $sign_in_form.validate({
         rules: {
             'email': {
@@ -101,30 +176,7 @@ $(document).ready(function() {
                 username: $("#sign-in-form-email").val(),
                 password : $("#sign-in-form-password").val()
             };
-            $.ajax(
-                {
-                    beforeSend: function() { $.mobile.loading('show'); }, //Show spinner
-                    url: '',
-                    dataType: 'json',
-                    data: submit_data
-                }).
-                success(function(data) {
-                    // sign in
-                    //$sign_in_form.trigger('login');
-                    console.log('success' + data);
-                }).
-                error( function(data) {
-                    console.log('error ' + data);
-                }).
-                always( function() {
-                    $sign_in_form.trigger('login');
-                    console.log('always');
-                    setTimeout(function() {
-                        $.mobile.loading('hide', {
-                        });
-                        $.mobile.navigate('#browse');
-                    }, 600);
-                });
+            LoginController.login(submit_data);
         }
     });
 
@@ -193,4 +245,7 @@ $(document).ready(function() {
                 });
         }
     });
+
+
+
 });
