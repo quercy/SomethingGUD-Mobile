@@ -33,7 +33,7 @@
     <div data-role="page" data-quicklinks="true" id="landing">
         <div role="main" class="ui-content">
             <div id="welcome-logo-wrapper">
-                <img src="img/logo.jpg" id="welcome-logo"/>
+                <img src="img/logo_transparent.png" id="welcome-logo"/>
                 <a href="#sign-in" class="ui-btn ui-shadow">Sign In</a>
                 <a href="#sign-in-fb" class="ui-btn ui-shadow ui-btn-c">Facebook Sign In</a>
                 <a href="#register" class="ui-btn ui-shadow">Register</a>
@@ -119,23 +119,23 @@
             </div>
 
             <div class="ui-grid-b ui-responsive" data-filter="true" id="item-grid">
-                <div class="ui-block-a">
+                <div class="ui-block-a grid-item">
                     <div class="ui-body ui-body-d"> Block 1</div>
                 </div>
-                <div class="ui-block-b">
+                <div class="ui-block-b grid-item">
                     <div class="ui-body ui-body-d"> Block 2</div>
                 </div>
-                <div class="ui-block-c">
+                <div class="ui-block-c grid-item">
                     <div class="ui-body ui-body-d"> Block 3</div>
                 </div>
 
-                <div class="ui-block-a">
+                <div class="ui-block-a grid-item">
                     <div class="ui-body ui-body-d"> Block 4</div>
                 </div>
-                <div class="ui-block-b">
+                <div class="ui-block-b grid-item">
                     <div class="ui-body ui-body-d"> Block 5</div>
                 </div>
-                <div class="ui-block-c">
+                <div class="ui-block-c grid-item">
                     <div class="ui-body ui-body-d"> Block 6</div>
                 </div>
 
@@ -196,6 +196,7 @@
         </div><!-- /header -->
         <div role="main" class="ui-content">
         Account account account
+            <a href="#" class="ui-btn ui-shadow ui-btn-corner-all" id="logout-button">Logout</a>
         </div>
         <div data-role="footer">
 

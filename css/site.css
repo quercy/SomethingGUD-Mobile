@@ -44,3 +44,68 @@
 #checkout-button {
     /*background:rgba(19, 198, 21, 0.82);*/
 }
+
+@media all and (min-width: 42em) {
+    .grid-item {
+        overflow: hidden; /* Use this or a "clearfix" to give the container height */
+    }
+    .grid-item .ui-body {
+        min-height: 14em;
+    }
+    .grid-item .ui-block-b,
+    .grid-item .ui-block-c {
+        float: left;
+        width: 49.95%;
+    }
+    .grid-item .ui-block-b p,
+    .grid-item .ui-block-c p {
+        font-size: .8em;
+    }
+    .grid-item > div + div .ui-body {
+        border-top-width: 1px;
+    }
+    .grid-item > div:first-child .ui-body {
+        border-bottom-width: 0;
+    }
+    .grid-item > div:last-child .ui-body {
+        border-left-width: 0;
+    }
+}
+/* 2nd breakpoint - Float all, 50/25/25 */
+@media all and (min-width: 55em) {
+    .grid-item .ui-body {
+        min-height: 18em;
+    }
+    .grid-item .ui-block-a,
+    .grid-item .ui-block-c {
+        float: left;
+        width: 49.95%;
+    }
+    .grid-item .ui-block-b,
+    .grid-item .ui-block-c {
+        float: left;
+        width: 24.925%;
+    }
+    .grid-item > div:first-child .ui-body {
+        border-bottom-width: 1px;
+    }
+    .grid-item > div + div .ui-body {
+        border-left-width: 0;
+    }
+}
+/* 3rd breakpoint - Bump up font size at very wide screens */
+@media all and (min-width: 75em) {
+    .grid-item .ui-body {
+        font-size: 125%;
+    }
+    .grid-item .ui-block-a,
+    .grid-item .ui-block-c {
+        float: left;
+        width: 49.95%;
+    }
+    .grid-item .ui-block-b,
+    .grid-item .ui-block-c {
+        float: left;
+        width: 24.925%;
+    }
+}

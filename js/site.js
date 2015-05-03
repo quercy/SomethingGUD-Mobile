@@ -135,7 +135,7 @@ $(document).ready(function() {
         var session_key;
 
         var constructor = function () {
-            var try_session = getCookie("session");
+            var try_session = readCookie("session");
             console.log("session cookie is " + try_session);
             if(try_session == undefined || try_session == "") {
                 $.mobile.navigate("#landing");
@@ -146,11 +146,30 @@ $(document).ready(function() {
             }
         };
 
-        var getCookie = function(name) {
-            var value = "; " + document.cookie;
-            var parts = value.split("; " + name + "=");
-            if (parts.length == 2) return parts.pop().split(";").shift();
-        };
+        function createCookie(name,value,days) {
+            if (days) {
+                var date = new Date();
+                date.setTime(date.getTime()+(days*24*60*60*1000));
+                var expires = "; expires="+date.toGMTString();
+            }
+            else var expires = "";
+            document.cookie = name+"="+value+expires+"; path=/";
+        }
+
+        function readCookie(name) {
+            var nameEQ = name + "=";
+            var ca = document.cookie.split(';');
+            for(var i=0;i < ca.length;i++) {
+                var c = ca[i];
+                while (c.charAt(0)==' ') c = c.substring(1,c.length);
+                if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+            }
+            return null;
+        }
+
+        function eraseCookie(name) {
+            createCookie(name,"",-1);
+        }
 
         constructor();
 
@@ -159,7 +178,7 @@ $(document).ready(function() {
             setKey : function(key) {
                 console.log("setting key to " + key);
                 session_key = key;
-                document.cookie = "session=" + key;
+                createCookie('session', session_key, 7);
             },
             getKey : function() {
                 return session_key;
@@ -169,10 +188,18 @@ $(document).ready(function() {
             },
             getProductsForCategory : function() {
 
+            },
+            logout : function() {
+                eraseCookie("session");
+                $.mobile.navigate("#landing");
             }
         }
     }());
 
+    $("#logout-button").click(function(evt) {
+        evt.preventDefault();
+        Model.logout();
+    });
 
     $sign_in_form.validate({
         rules: {
