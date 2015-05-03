@@ -3,14 +3,12 @@
  */
 
 $(document).ready(function() {
-    var menu = '<div data-role="panel" id="menu-left" data-display="push" data-theme="a" data-position="left"> <ul data-role="listview"> <li><a href="#browse" data-rel="close">Browse Items</a></li> <li><a href="#cart" data-rel="close">Shopping cart</a></li> <li><a href="#" data-rel="close">Orders</a></li> <li><a href="#" data-rel="close">Account Information</a></li> </ul> </div>';
+    var menu = '<div data-role="panel" id="menu-left" data-display="push" data-theme="a" data-position="left"> <ul data-role="listview"> <li><a href="#browse" data-rel="close">Browse Items</a></li> <li><a href="#cart" data-rel="close">Shopping cart</a></li> <li><a href="#orders" data-rel="close">Orders</a></li> <li><a href="#account" data-rel="close">Account Information</a></li> </ul> </div>';
     var $sign_in_form = $("#sign-in-form");
     var $register_form = $("#register-form");
-    //console.log("cookies are " + document.cookie);
     setTimeout(function () {   window.scrollTo(0, 1); }, 1000); // supposed to hide safart navbar
 
     $(document).on('pagebeforecreate', function() {
-        //alert("pagebeforecreate");
         $.mobile.pageContainer.prepend(menu);
         $("#menu-left").panel().enhanceWithin();
     });
@@ -21,7 +19,6 @@ $(document).ready(function() {
 
 
     $sign_in_form.on('login', function() {
-        //BrowseController();
     });
 
     var BrowseController = (function() {
@@ -31,6 +28,7 @@ $(document).ready(function() {
         var shopping_date = new Date(Date.now());
         var $change_date_link = $("#change-date");
         var $date_pick_div = $("#pick-date");
+        var number_of_columns = 3;
 
         var constructor = function () {
             //console.log(shopping_date.toDateString());
@@ -54,20 +52,30 @@ $(document).ready(function() {
             $date_display.text(shopping_date.toDateString());
         };
 
-        var tableUpdate = function (category) {
-            // clear old items
-            // AJAX in new items
-
-            return {
-                // return the AJAX data
+        var browseUpdate = function (category) {
+            $grid.empty();
+            var products = {};
+            var grid_html = "";
+            if(category == undefined) {
+                products = Model.getAllProducts();
             }
+            else {
+                Model.getProductsForCategory(category);
+            }
+
+            for(var i = 0; i < products.length; i++) {
+                var letter = String.fromCharCode(i%number_of_columns + 97); // repeats abc, etc - for the ui-block class
+                grid_html += '<div class="ui-block-'+letter+'"><div class="ui-body ui-body-d"> Block 1</div></div>';
+            }
+
+            $grid.append(grid_html);
 
         };
         constructor();
 
         // Public methods
         return {
-            getTableData : function(){return tableUpdate();}
+            reconstructGrid : function(){browseUpdate();}
         }
     }());
 
@@ -89,8 +97,9 @@ $(document).ready(function() {
                     // sign in
                     $sign_in_form.trigger('login');
                     // if server returns a session id, set it as the current cookie
-                    console.log('success' + data);
-                    data.session = "1234";
+                    data = JSON.parse(data);
+                    console.log('success: ' + data);
+
                     Model.setKey(data.session);
                     //document.cookie = "session=" + data.session;
                 }).
@@ -154,6 +163,12 @@ $(document).ready(function() {
             },
             getKey : function() {
                 return session_key;
+            },
+            getAllProducts : function() {
+
+            },
+            getProductsForCategory : function() {
+
             }
         }
     }());
@@ -245,7 +260,4 @@ $(document).ready(function() {
                 });
         }
     });
-
-
-
 });
