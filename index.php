@@ -154,8 +154,35 @@
             <h1>Header</h1>
         </div><!-- /header -->
         <div role="main" class="ui-content">
+            <table data-role="table" id="cart-table" data-mode="reflow" class="ui-responsive">
+                  <thead>
+                    <tr>
+                          <th data-priority="1">Quantity</th>
+                          <th data-priority="persist">Title</th>
+                          <th data-priority="2">Price</th>
+                        </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                          <th>1</th>
+                          <td>Fish</td>
+                          <td>1941</td>
 
-            Cart cart cart
+                        </tr>
+                    <tr>
+                          <th>1</th>
+                          <td>Cheese</td>
+                          <td>1942</td>
+                        </tr>
+                    <tr>
+                          <th>3</th>
+                          <td>Chicken</td>
+                          <td>1972</td>
+                        </tr>
+                  </tbody>
+            </table>
+            <br/>
+            <a href="#checkout" class="ui-btn ui-shadow ui-btn-corner-all" id="checkout-button">Checkout</a>
         </div>
         <div data-role="footer">
 
@@ -163,8 +190,6 @@
     </div>
 
     <div data-role="page" data-quicklinks="true" id="account" data-position="left" data-display="reveal">
-
-
         <div data-role="header" style="overflow:hidden;">
             <a href="#menu-left" data-icon="home" class="ui-btn-left">Menu</a>
             <h1>Header</h1>

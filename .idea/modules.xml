@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$USER_HOME$/WebstormProjects/SomethingGUD/.idea/SomethingGUD.iml" filepath="$USER_HOME$/WebstormProjects/SomethingGUD/.idea/SomethingGUD.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/SomethingGUD-Mobile.iml" filepath="$PROJECT_DIR$/.idea/SomethingGUD-Mobile.iml" />
     </modules>
   </component>
 </project>

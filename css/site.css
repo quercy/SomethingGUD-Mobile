@@ -36,3 +36,11 @@
 .ui-filterable {
     margin:10px;
 }
+
+#cart-table tr {
+    border-bottom:1px solid grey;
+}
+
+#checkout-button {
+    /*background:rgba(19, 198, 21, 0.82);*/
+}

@@ -8,7 +8,7 @@ $(document).ready(function() {
     var $register_form = $("#register-form");
     setTimeout(function () {   window.scrollTo(0, 1); }, 1000); // supposed to hide safart navbar
 
-    $(document).on('pagebeforecreate', function() {
+    $(document).one('pagebeforecreate', function() {
         $.mobile.pageContainer.prepend(menu);
         $("#menu-left").panel().enhanceWithin();
     });
