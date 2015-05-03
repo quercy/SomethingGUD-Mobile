@@ -24,8 +24,8 @@
 
 #item-grid > div > div {
     text-align: center;
-    height:100px;
-    background-color:lightgray;
+    /*height:100px;*/
+    /*background-color:lightgray;*/
     margin:10px;
 }
 
@@ -80,11 +80,13 @@
     .grid-item .ui-block-c {
         float: left;
         width: 49.95%;
+        /*height: 49.95%;*/
     }
     .grid-item .ui-block-b,
     .grid-item .ui-block-c {
         float: left;
         width: 24.925%;
+        /*height: 24.925%;*/
     }
     .grid-item > div:first-child .ui-body {
         border-bottom-width: 1px;
@@ -102,10 +104,16 @@
     .grid-item .ui-block-c {
         float: left;
         width: 49.95%;
+        /*height: 49.95%;*/
     }
     .grid-item .ui-block-b,
     .grid-item .ui-block-c {
         float: left;
         width: 24.925%;
+        /*height: 24.925%;*/
     }
+}
+
+.grid-item img {
+    width:100%;
 }

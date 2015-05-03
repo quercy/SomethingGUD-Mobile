@@ -14,7 +14,18 @@ $(document).ready(function() {
         $("#menu-left").panel().enhanceWithin();
     });
 
-    $sign_in_form.on('login', function() {
+    //$sign_in_form.on('login', function() {
+    //    BrowseController.reconstructGrid();
+    //});
+    //$( window ).on( "navigate", function(event,data) {
+    //    console.log(event);
+    //    console.log(data);
+    //});
+
+    $( document ).on( "pagechange", function( event, ui ) { // okay
+        if(event.currentTarget.URL.split("/").slice(-1) == "#browse") {
+            BrowseController.reconstructGrid();
+        }
     });
 
     var BrowseController = (function() {
@@ -25,6 +36,7 @@ $(document).ready(function() {
         var $change_date_link = $("#change-date");
         var $date_pick_div = $("#pick-date");
         var number_of_columns = 3;
+        var products;
 
         var constructor = function () {
             //console.log(shopping_date.toDateString());
@@ -49,29 +61,41 @@ $(document).ready(function() {
         };
 
         var browseUpdate = function (category) {
-            $grid.empty();
-            var products = {};
-            var grid_html = "";
             if(category == undefined) {
-                products = Model.getAllProducts();
+                if(products == undefined) {
+                    Model.getAllProducts().success(function (data) {
+                        products = JSON.parse(data);
+                        updateGrid();
+                    }).always(function () {
+
+                    });
+                }
+                else {
+                    // no need to reinitialize
+                }
             }
             else {
-                Model.getProductsForCategory(category);
-            }
 
+                //products = Model.getProductsForCategory(category, updateGrid(products));
+            }
+        };
+
+        var updateGrid = function() {
+            $grid.empty();
+            var grid_html = "";
             for(var i = 0; i < products.length; i++) {
                 var letter = String.fromCharCode(i%number_of_columns + 97); // repeats abc, etc - for the ui-block class
-                grid_html += '<div class="ui-block-'+letter+'"><div class="ui-body ui-body-d"> Block 1</div></div>';
+                grid_html += '<div class="ui-block-'+letter+'"><div class="ui-body ui-body-d grid-item"><div>'+products[i]['product_name']+'</div><img src="'+products[i]['image_thumb_url'] + '"></div></div>';
             }
-
-            $grid.append(grid_html);
-
+            $grid.append(grid_html).hide().fadeIn();
         };
+
         constructor();
 
         // Public methods
         return {
             reconstructGrid : function(){browseUpdate();}
+            //updateGrid : function() {updateGrid();}
         }
     }());
 
@@ -138,7 +162,7 @@ $(document).ready(function() {
             }
             else {
                 session_key = try_session;
-                $.mobile.navigate("#browse");
+                //$.mobile.navigate("#browse"); ?????
             }
         };
 
@@ -179,10 +203,10 @@ $(document).ready(function() {
             getKey : function() {
                 return session_key;
             },
-            getAllProducts : function() {
-
+            getAllProducts : function(callback) {
+                return $.get('/api/products');
             },
-            getProductsForCategory : function() {
+            getProductsForCategory : function(category, callback) {
 
             },
             logout : function() {
