@@ -3,6 +3,7 @@
  */
 
 $(document).ready(function() {
+    var myLazyLoad = new LazyLoad();
     var menu = '<div data-role="panel" id="menu-left" data-display="push" data-theme="a" data-position="left"> <ul data-role="listview"> <li><a href="#browse" data-rel="close">Browse Items</a></li> <li><a href="#cart" data-rel="close">Shopping cart</a></li> <li><a href="#orders" data-rel="close">Orders</a></li> <li><a href="#account" data-rel="close">Account Information</a></li> </ul> </div>';
     var $sign_in_form = $("#sign-in-form");
     var $register_form = $("#register-form");
@@ -12,11 +13,6 @@ $(document).ready(function() {
         $.mobile.pageContainer.prepend(menu);
         $("#menu-left").panel().enhanceWithin();
     });
-
-    //$sign_in_form.on('login', function() {
-    //    $("#item-grid").append('<div class="ui-block-b"> <div class="ui-body ui-body-d"> Block 2</div> </div>');
-    //});
-
 
     $sign_in_form.on('login', function() {
     });
