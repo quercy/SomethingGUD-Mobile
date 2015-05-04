@@ -17,6 +17,10 @@ $(document).ready(function() {
     $( document ).on( "pagechange", function( event, ui ) { // okay
         if(event.currentTarget.URL.split("/").slice(-1) == "#browse") {
             BrowseController.reconstructGrid();
+            CartController();
+        }
+
+        if(event.currentTarget.URL.split("/").slice(-1) == "#cart") {
         }
     });
 
@@ -202,7 +206,6 @@ $(document).ready(function() {
                 post_data['cart_data'][i]['product_id'] = items[i][0];
                 post_data['cart_data'][i]['quantity'] = items[i][1];
             }
-            console.log(post_data);
             $.post('/api/cart', post_data).success(function() {
                 //pullCart();
             });
@@ -227,7 +230,7 @@ $(document).ready(function() {
             }
         }
 
-    }());
+    });
 
     var LoginController = (function() {
         var _this = this;
@@ -247,23 +250,52 @@ $(document).ready(function() {
                 success(function(data) {
                     if(data != false) {
                         $sign_in_form.trigger('login');
-                        console.log('success: ' + data);
+                        //console.log('success: ' + data);
                         Model.setKey(data);
 
                         $.mobile.navigate('#browse');
                     }
                     else {
+                        // @todo unvalidate
                         alert("bad login");
                     }
 
 
                 }).
                 error( function(data) {
-                    console.log('error ' + data);
+                    //console.log('error ' + data);
                 }).
                 always( function() {
                     $.mobile.loading('hide', {
                     });
+                });
+        };
+
+        var submitRegister = function(data) {
+            $.ajax(
+                {
+                    beforeSend: function() { $.mobile.loading('show'); }, //Show spinner
+                    url: '/api/users',
+                    dataType: 'json',
+                    method: 'post',
+                    data: data
+                }).
+                success( function(data) {
+                    //data=JSON.parse(data);
+                    Model.setKey(data);
+                    console.log('success' + data);
+                    $.mobile.navigate('#browse');
+                }).
+                error( function(data) {
+                    console.log(data);
+                    console.log('error ' + data);
+                }).
+                always( function() {
+
+                    //$sign_in_form.trigger('login');
+                    $.mobile.loading('hide', {
+                    });
+
                 });
         };
 
@@ -273,7 +305,11 @@ $(document).ready(function() {
         return {
             login : function(_data) {
                 submitLogin(_data);
+            },
+            register : function(_data) {
+                submitRegister(_data);
             }
+
         }
     }());
 
@@ -322,7 +358,7 @@ $(document).ready(function() {
         // Public methods
         return {
             setKey : function(key) {
-                console.log("setting key to " + key);
+                //console.log("setting key to " + key);
                 session_key = key;
                 createCookie('session', session_key, 7);
             },
@@ -401,36 +437,14 @@ $(document).ready(function() {
         },
         submitHandler: function(form) {
             var submit_data = {
-                email: $("#register-form-email").val(),
-                password : $("#register-form-password").val(),
-                'first-name' : $("#register-form-first-name").val(),
-                'last-name' : $("#register-form-last-name").val(),
+                'user_email': $("#register-form-email").val(),
+                'password' : $("#register-form-password-1").val(),
+                'first_name' : $("#register-form-first-name").val(),
+                'last_name' : $("#register-form-last-name").val(),
                 'zip' : $("#register-form-zip").val()
             };
-            $.ajax(
-                {
-                    beforeSend: function() { $.mobile.loading('show'); }, //Show spinner
-                    url: '',
-                    dataType: 'json',
-                    data: submit_data
-                }).
-                success( function(data) {
-                    // sign in
-                    //$sign_in_form.trigger('login');
-                    console.log('success' + data);
-                }).
-                error( function(data) {
-                    console.log('error ' + data);
-                }).
-                always( function() {
-                    $sign_in_form.trigger('login');
-                    console.log('always');
-                    setTimeout(function() {
-                        $.mobile.loading('hide', {
-                        });
-                        $.mobile.navigate('#browse');
-                    }, 600);
-                });
+            console.log(submit_data);
+            LoginController.register(submit_data);
         }
     });
 });

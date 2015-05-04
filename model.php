@@ -212,4 +212,21 @@ class SG_Model {
             return null;
         }
     }
+
+    public function addUser($data) {
+        $user_email = $data['user_email'];
+        $password = $data['password'];
+        $first_name = $data['first_name'];
+        $last_name = $data['last_name'];
+        $zip = $data['zip'];
+        $password = md5($password);
+        $sql = "INSERT INTO `users` (user_email, user_password) VALUES ('$user_email','$password');";
+        $q = $this->db->prepare($sql);
+        $q->execute();
+        $user_id = $this->db->lastInsertId();
+        $sql2 = "INSERT INTO `addresses` (user_id, first_name, last_name, zip) VALUES ($user_id,'$first_name', '$last_name', '$zip');";
+        $q2 = $this->db->prepare($sql2);
+        $q2->execute();
+        return $this->generateSessionKey($user_id);
+    }
 }

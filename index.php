@@ -135,7 +135,21 @@ $app->get('/api/cart', function() use ($model, $app) {
     }
 });
 
-
+$app->post('/api/users', function() use ($model, $app) {
+    $data = [
+        'user_email' => $app->request->post('user_email'),
+        'password' => $app->request->post('password')   ,
+        'first_name' => $app->request->post('first_name'),
+        'last_name' => $app->request->post('last_name'),
+        'zip' => $app->request->post('zip'),
+    ];
+//    var_dump($app->request->post);
+    if($data['user_email'] != '' && !is_null($data['user_email']))
+        echo json_encode($model->addUser($data));
+    else {
+        return null;
+    }
+});
 
 
 $app->run();
