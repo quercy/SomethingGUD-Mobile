@@ -5,7 +5,7 @@ require 'vendor/autoload.php';
 require 'model.php';
 
 $model = new SG_Model();
-$app = new \Slim\Slim();
+$app = new \Slim\Slim(['debug' => true]);
 // Main route is to return the client
 $app->get('/', function () {
     readfile("main.html");
@@ -88,6 +88,43 @@ $app->get('/api/products/:id', function($id) use ($model, $app) {
         if($model->authenticateKey($key) != false) {
             $product = $model->getProduct($id);
             echo json_encode($product);
+        }
+        else {
+            return null;
+        }
+    }
+    else {
+        return null;
+    }
+});
+
+$app->post('/api/cart', function() use ($model, $app) {
+//    var_dump($app->request->post('cart_data'));
+    $key = $app->getCookie('session');
+    $cart = $app->request->post('cart_data');
+//    echo($cart);
+    if(!is_null($key)) {
+        if($model->authenticateKey($key) != false) {
+            $model->updateCart($key, $cart);
+            echo json_encode(true);
+        }
+        else {
+            return null;
+        }
+    }
+    else {
+        return null;
+    }
+});
+
+$app->get('/api/cart', function() use ($model, $app) {
+//    var_dump($app->request->post('cart_data'));
+    $key = $app->getCookie('session');
+//    echo($cart);
+    if(!is_null($key)) {
+        if($model->authenticateKey($key) != false) {
+            $cart = $model->getCart($key);
+            echo json_encode($cart);
         }
         else {
             return null;

@@ -3,11 +3,11 @@
  */
 
 $(document).ready(function() {
-    var myLazyLoad = new LazyLoad();
-    var menu = '<div data-role="panel" id="menu-left" data-display="push" data-theme="a" data-position="left"> <ul data-role="listview"> <li><a href="#browse" data-rel="close">Browse Items</a></li> <li><a href="#cart" data-rel="close">Shopping cart</a></li> <li><a href="#orders" data-rel="close">Orders</a></li> <li><a href="#account" data-rel="close">Account Information</a></li> </ul> </div>';
+    //var myLazyLoad = new LazyLoad();
+    var menu = '<div data-role="panel" id="menu-left" data-display="push" data-theme="a" data-position="left"> <ul data-role="listview"> <li><a href="#browse" data-rel="close">Browse Items</a></li> <li><a href="#cart" data-rel="close">Shopping cart</a></li> <li><a href="#account" data-rel="close">Account Information</a></li> </ul> </div>';
     var $sign_in_form = $("#sign-in-form");
     var $register_form = $("#register-form");
-    setTimeout(function () {   window.scrollTo(0, 1); }, 1000); // supposed to hide safart navbar
+    //setTimeout(function () {   window.scrollTo(0, 1); }, 1000); // supposed to hide safarty navbar
 
     $(document).one('pagebeforecreate', function() {
         $.mobile.pageContainer.prepend(menu);
@@ -50,8 +50,7 @@ $(document).ready(function() {
                 var quantity = $("#quantity").val();
                 var product_id = $detail.data('product-id');
                 CartController.addToCart(product_id,quantity);
-                // @todo close dialog
-                // @todo add to cart
+                $.mobile.back();
             });
             $.get('/api/products/categories').success(function(data) {
                 data = JSON.parse(data);
@@ -97,11 +96,13 @@ $(document).ready(function() {
 
             $grid.append(grid_html).hide().fadeIn().find('a').click(function(evt) {
                 var index = this.getAttribute('data-item-id');
+
                 $detail.find('#item-detail-title').html('<h2>'+products[index]['product_name']+'</h2>');
                 $detail.find('#item-detail-image').html('<img src="'+products[index]['image_full_url']+'"></img>');
                 $detail.find('#item-detail-description').html(products[index]['product_description']);
                 $detail.find('#item-detail-price').html('$'+products[index]['product_price'] + ' / ' + products[index]['product_price_per']);
                 $detail.data('product-id',products[index]['product_id']);
+                $detail.find('#quantity').val(1);
             });
         };
 
@@ -118,53 +119,96 @@ $(document).ready(function() {
         var $table = $("#cart-table");
 
         var constructor = function() {
+            pullCart();
+        };
 
+        var initializeRemoveClickEvents = function() {
+            $(".remove-cart-item").one('click',function(e) {
+                e.preventDefault();
+                var numb = $(this).parent().parent().fadeOut().attr('data-product-id');
+                var new_ary = [];
+                for(var i = 0; i < items.length; i++) {
+                    if(items[i][0] != numb) {
+                        new_ary.push(items[i]);
+                    }
+                }
+                //console.log(new_ary);
+                items = new_ary;
+                pushCart();
+            });
         };
 
         var refreshCart = function() {
-            console.log(items);
-            items.sort();
-            var len = items.length;
-            // My attempt to solve duplicate items: not working
-            //for(var i = 0; i < items.length; i++) {
-            //    console.log(items);
-            //    //console.log('i is ' + i);
-            //    if(i+1 < len) { // if there's an item past this one
-            //        //console.log('i is less than ' + len);
-            //        while(items[i][0] == items[i+1][0]) {
-            //            //console.log('matching');
-            //            items[i][1] = String(parseInt(items[i][1]) + parseInt(items[i+1][1]));
-            //            //console.log('items is ' + items.slice(0,i));
-            //            console.log(items);
-            //            var items_new = items.slice(0,i);
-            //            console.log(items);
-            //            len--;
-            //            if(i + 1 < len) {
-            //                console.log(items);
-            //                items_new = items.concat(items.slice(i+1));
-            //            }
-            //            items = items_new;
-            //        }
-            //
-            //    }
-            //}
-            var tabletext= '';
             $table.find('tbody').empty();
-            console.log('refreshing');
+            enforceConsistency();
             for(var i = 0; i < items.length; i++ ) {
-                var index = i;
+                var index;
                 $.get('/api/products/' + items[i][0]).success(function(data) {
                     data = JSON.parse(data);
-                    $table.find('tbody').append('<tr><td class="qty"></td><td>'+data['product_name']+'</td><td>'+data['product_price'] + '</td></tr>');
+                    $table.find('tbody')
+                        .append('<tr data-product-id="'+data['product_id']+'"><td class="qty"></td><td>'+data['product_name']+'</td><td>'+data['product_price'] + '</td><td><a href="#" class="remove-cart-item">Remove</a></td></tr>');
                 }).always(function() {
-                    var index = 0;
-                    $table.find('.qty').each(function() {
-                        $(this).html(items[index++][1]);
-                    })
+                    $qty = $table.find('tr:last .qty');
+                    for(var i = 0; i < items.length; i++) {
+                        if($qty.closest('tr').attr('data-product-id') == items[i][0]) {
+                            $qty.html(items[i][1]);
+                            //alert(items[index][1]);
+                        }
+
+                    }
+                    initializeRemoveClickEvents();
                 });
             }
         };
 
+        var enforceConsistency = function() {
+            //items.sort();
+            //console.log(items);
+            //for(var i = 0; i < items.length; i++) {
+            //    if(i < items.length - 1) {
+            //        while (items[i][0] == items[i + 1][0]) {
+            //            items[i][0] = String(parseInt(items[i][0]) + parseInt(items[i + 1][0]));
+            //            items.splice(i + 1, 1);
+            //        }
+            //    }
+            //}
+        };
+
+        var pullCart = function() {
+            $.get('/api/cart').success(function(data) {
+                data=JSON.parse(data);
+                //console.log(data);
+                var new_ary = [];
+                if(data != null) {
+                    for (var i = 0; i < data.length; i++) {
+                        new_ary[i] = [String(data[i]['product_id']), String(data[i]['quantity'])];
+                    }
+                    items = new_ary;
+
+                }
+                else {
+                    items = [];
+                }
+                refreshCart();
+                //console.log(new_ary);
+
+            });
+        };
+
+        var pushCart = function() {
+            var post_data = {'cart_data' : {}};
+            for(var i = 0; i < items.length; i++) {
+                post_data['cart_data'][i] = {};
+                post_data['cart_data'][i]['product_id'] = items[i][0];
+                post_data['cart_data'][i]['quantity'] = items[i][1];
+            }
+            console.log(post_data);
+            $.post('/api/cart', post_data).success(function() {
+                //pullCart();
+            });
+
+        };
+        constructor();
         // public methods
         return {
             addToCart : function(item_id, quantity) {
@@ -178,9 +222,11 @@ $(document).ready(function() {
                 if(added == false) {
                     items.push([item_id, quantity]);
                 }
+                pushCart();
                 refreshCart();
             }
         }
+
     }());
 
     var LoginController = (function() {
@@ -218,16 +264,6 @@ $(document).ready(function() {
                 always( function() {
                     $.mobile.loading('hide', {
                     });
-                    //var data = {};
-                    //data.session = "1234";
-                    //Model.setKey(data.session);
-                    //$sign_in_form.trigger('login');
-                    //console.log('always');
-                    //setTimeout(function() {
-                    //    $.mobile.loading('hide', {
-                    //    });
-                    //    $.mobile.navigate('#browse');
-                    //}, 600);
                 });
         };
 
@@ -247,7 +283,6 @@ $(document).ready(function() {
 
         var constructor = function () {
             var try_session = readCookie("session");
-            console.log("session cookie is " + try_session);
             if(try_session == undefined || try_session == "") {
                 $.mobile.navigate("#landing");
             }

@@ -143,4 +143,73 @@ class SG_Model {
             return null;
         }
     }
+
+    private function getUserIDByKey($key) {
+        $q = $this->db->query("SELECT * FROM `sessions`
+        INNER JOIN `users` ON `sessions`.`user_id` = `users`.`user_id`
+        WHERE `public_session_id` = '$key';");
+        $q->execute();
+        $result = $q->fetchAll(PDO::FETCH_ASSOC);
+        if(sizeof($result) > 0) {
+            return array_pop($result['user_id']);
+        }
+        else {
+            return false;
+        }
+    }
+
+    private function getSessionData($key) {
+        $q = $this->db->query("SELECT * FROM `sessions` WHERE `public_session_id` = '$key';");
+        $result = $q->fetchAll(PDO::FETCH_ASSOC);
+        if(sizeof($result) > 0) {
+            return array_pop($result);
+        }
+        else {
+            return null;
+        }
+    }
+
+    public function updateCart($key, $product_data) {
+        $session_data = $this->getSessionData($key);
+        if($session_data) {
+            $cart_id = $session_data['cart_id'];
+            $sql = "DELETE FROM `cart_products` WHERE `cart_id` = $cart_id;";
+            $q = $this->db->prepare($sql);
+            $q->execute();
+//            $sql2 = "INSERT INTO `cart_products` (cart_id, product_id) VALUES ();";
+//            $q2 = $this->db->prepare($sql2);
+//            $q2->execute();
+
+            $stmt = $this->db->prepare("INSERT INTO `cart_products` (cart_id, product_id, quantity) VALUES (:cart_id, :product_id, :quantity)");
+            $stmt->bindParam(':cart_id', $cart_id);
+            $stmt->bindParam(':product_id', $product_id);
+            $stmt->bindParam(':quantity', $quantity);
+            foreach($product_data as $product_datum) {
+//                var_dump($product_datum);
+                $cart_id = $session_data['cart_id'];
+                $product_id = $product_datum['product_id'];
+                $quantity = $product_datum['quantity'];
+//                echo($stmt);
+                $stmt->execute();
+            }
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    public function getCart($key) {
+        $session_data = $this->getSessionData($key);
+//        var_dump($session_data);
+        $cart_id = $session_data['cart_id'];
+        $q = $this->db->query("SELECT * FROM `cart_products` WHERE `cart_id` = $cart_id;");
+        $result = $q->fetchAll(PDO::FETCH_ASSOC);
+        if(sizeof($result) > 0) {
+            return $result;
+        }
+        else {
+            return null;
+        }
+    }
 }
