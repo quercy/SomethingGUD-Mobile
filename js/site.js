@@ -15,9 +15,11 @@ $(document).ready(function() {
     });
 
     $( document ).on( "pagechange", function( event, ui ) { // okay
+        if(Model.checkAuth() == false) {
+            $.navigate('#landing');
+        }
         if(event.currentTarget.URL.split("/").slice(-1) == "#browse") {
             BrowseController.reconstructGrid();
-            CartController();
         }
 
         if(event.currentTarget.URL.split("/").slice(-1) == "#cart") {
@@ -57,14 +59,16 @@ $(document).ready(function() {
                 $.mobile.back();
             });
             $.get('/api/products/categories').success(function(data) {
-                data = JSON.parse(data);
-                var html = '';
-                for (var i = 0; i < data.length; i++) {
-                    html += '<li><a class="ui-btn ui-btn-icon-right ui-icon-carat-r" href="#">' + data[i]['category_display_name'] + '</a></li>';
+                if(data.length && data != 'null') {
+                    data = JSON.parse(data);
+                    var html = '';
+                    for (var i = 0; i < data.length; i++) {
+                        html += '<li><a class="ui-btn ui-btn-icon-right ui-icon-carat-r" href="#">' + data[i]['category_display_name'] + '</a></li>';
+                    }
+                    $("#categories-list").append(html).trigger('create').enhanceWithin().find('a').click(function () {
+                        $("#filter-grid-input").val($(this).text()).trigger('keyup');
+                    });
                 }
-                $("#categories-list").append(html).trigger('create').enhanceWithin().find('a').click(function () {
-                    $("#filter-grid-input").val($(this).text()).trigger('keyup');
-                });
             });
         };
 
@@ -78,8 +82,10 @@ $(document).ready(function() {
         var browseUpdate = function (category) {
                 if(products == undefined) {
                     Model.getAllProducts().success(function (data) {
-                        products = JSON.parse(data);
-                        updateGrid();
+                        if(data != 'null' && data.length) {
+                            products = JSON.parse(data);
+                            updateGrid();
+                        }
                     }).always(function () {
 
                     });
@@ -180,22 +186,21 @@ $(document).ready(function() {
 
         var pullCart = function() {
             $.get('/api/cart').success(function(data) {
-                data=JSON.parse(data);
-                //console.log(data);
-                var new_ary = [];
-                if(data != null) {
-                    for (var i = 0; i < data.length; i++) {
-                        new_ary[i] = [String(data[i]['product_id']), String(data[i]['quantity'])];
+                if(data != 'null' && data.length) {
+                    data=JSON.parse(data);
+                    console.log(data);
+                    var new_ary = [];
+                        for (var i = 0; i < data.length; i++) {
+                            new_ary[i] = [String(data[i]['product_id']), String(data[i]['quantity'])];
+                        }
+                        items = new_ary;
+
                     }
-                    items = new_ary;
-
-                }
-                else {
-                    items = [];
-                }
-                refreshCart();
-                //console.log(new_ary);
-
+                    else {
+                        items = [];
+                    }
+                    refreshCart();
+                    //console.log(new_ary);
             });
         };
 
@@ -230,7 +235,7 @@ $(document).ready(function() {
             }
         }
 
-    });
+    }());
 
     var LoginController = (function() {
         var _this = this;
@@ -374,6 +379,20 @@ $(document).ready(function() {
             logout : function() {
                 eraseCookie("session");
                 $.mobile.navigate("#landing");
+            },
+            checkAuth : function() {
+                $.post('/api/authenticate', {session_key : session_key}).success(function(data) {
+                    if(data == 'null' ) {
+                        console.log('not authenticated');
+                        return false;
+                        Model.logout();
+                        //$.navigate('#landing');
+                    }
+                    else {
+                        return true;
+                        console.log('authenticated');
+                    }
+                });
             }
         }
     }());
@@ -407,11 +426,14 @@ $(document).ready(function() {
     $register_form.validate({
         rules: {
             'email': {
-                required : true
+                required : true,
+                email : true
             },
             'zip': {
                 required:true,
-                digits: true
+                digits: true,
+                minlength: 5,
+                maxlength: 5
             },
             'password-1' : {
                 required:true

@@ -27,7 +27,7 @@ $app->post('/api/authenticate', function() use ($model, $app) {
         return $model->authenticateKey($key);
     }
     else {
-        return false;
+        return null;
     }
 });
 

@@ -124,7 +124,7 @@ class SG_Model {
             return $result[0]['public_session_id'];
         }
         else {
-            return false;
+            return null;
         }
     }
     public function destroyKey($key) {
@@ -154,7 +154,7 @@ class SG_Model {
             return array_pop($result['user_id']);
         }
         else {
-            return false;
+            return null;
         }
     }
 
@@ -171,6 +171,15 @@ class SG_Model {
 
     public function updateCart($key, $product_data) {
         $session_data = $this->getSessionData($key);
+        for($i = 0; $i < sizeof($product_data); $i++) { // yes, this is not efficient
+            for($f = 0; $f < sizeof($product_data); $f++) {
+                if($i != $f && $product_data[$i]['product_id'] == $product_data[$f]['product_id']) {
+                    $product_data[$i]['quantity'] = strval(intval($product_data[$i]['quantity']) + intval($product_data[$f]['quantity']));
+                    unset($product_data[$f]);
+                }
+            }
+        }
+
         if($session_data) {
             $cart_id = $session_data['cart_id'];
             $sql = "DELETE FROM `cart_products` WHERE `cart_id` = $cart_id;";
@@ -195,7 +204,7 @@ class SG_Model {
             return true;
         }
         else {
-            return false;
+            return null;
         }
     }
 
