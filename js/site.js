@@ -34,6 +34,7 @@ $(document).ready(function() {
         var constructor = function () {
             //console.log(shopping_date.toDateString());
             update_date();
+            $("#filter-grid-input").val("").trigger('keyup');
             $date_pick_div.date({
                 onSelect: function(dateText) {
                     update_date($date_pick_div.date("getDate"));
@@ -52,8 +53,15 @@ $(document).ready(function() {
                 // @todo close dialog
                 // @todo add to cart
             });
-            $("#categories-list li a").click(function() {
-                $("#filter-grid-input").val($(this).text()).trigger('keyup');
+            $.get('/api/products/categories').success(function(data) {
+                data = JSON.parse(data);
+                var html = '';
+                for (var i = 0; i < data.length; i++) {
+                    html += '<li><a class="ui-btn ui-btn-icon-right ui-icon-carat-r" href="#">' + data[i]['category_display_name'] + '</a></li>';
+                }
+                $("#categories-list").append(html).trigger('create').enhanceWithin().find('a').click(function () {
+                    $("#filter-grid-input").val($(this).text()).trigger('keyup');
+                });
             });
         };
 
@@ -65,7 +73,6 @@ $(document).ready(function() {
         };
 
         var browseUpdate = function (category) {
-            if(category == undefined) {
                 if(products == undefined) {
                     Model.getAllProducts().success(function (data) {
                         products = JSON.parse(data);
@@ -74,14 +81,6 @@ $(document).ready(function() {
 
                     });
                 }
-                else {
-                    // no need to reinitialize
-                }
-            }
-            else {
-
-                //products = Model.getProductsForCategory(category, updateGrid(products));
-            }
         };
 
         var updateGrid = function() {

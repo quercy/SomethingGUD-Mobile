@@ -132,4 +132,15 @@ class SG_Model {
         $q = $this->db->prepare($sql);
         return $q->execute ? true : false;
     }
+
+    public function getCategories() {
+        $q = $this->db->query("SELECT * FROM `categories`;");
+        $result = $q->fetchAll(PDO::FETCH_ASSOC);
+        if(sizeof($result) > 0) {
+            return $result;
+        }
+        else {
+            return null;
+        }
+    }
 }

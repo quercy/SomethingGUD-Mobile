@@ -65,6 +65,23 @@ $app->get('/api/products', function() use ($model, $app) {
 
 });
 
+
+$app->get('/api/products/categories', function() use ($model, $app) {
+    $key = $app->getCookie('session');
+    if(!is_null($key)) {
+        if($model->authenticateKey($key) != false) {
+            $categories = $model->getCategories();
+            echo json_encode($categories);
+        }
+        else {
+            return null;
+        }
+    }
+    else {
+        return null;
+    }
+});
+
 $app->get('/api/products/:id', function($id) use ($model, $app) {
     $key = $app->getCookie('session');
     if(!is_null($key)) {
@@ -79,8 +96,9 @@ $app->get('/api/products/:id', function($id) use ($model, $app) {
     else {
         return null;
     }
-
 });
+
+
 
 
 $app->run();
