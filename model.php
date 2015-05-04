@@ -222,8 +222,22 @@ class SG_Model {
         }
     }
 
+    private function emailExists($email) {
+        $q = $this->db->query("SELECT * FROM `users` WHERE `user_email` = '$email';");
+        $result = $q->fetchAll(PDO::FETCH_ASSOC);
+        if(sizeof($result) > 0) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
     public function addUser($data) {
         $user_email = $data['user_email'];
+        if($this->emailExists($user_email)) {
+            return 'email exists';
+        }
         $password = $data['password'];
         $first_name = $data['first_name'];
         $last_name = $data['last_name'];

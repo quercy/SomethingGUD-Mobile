@@ -145,3 +145,7 @@
 #item-view-header form {
     margin:10px;
 }
+#header-logo {
+    text-align:center; margin:0 auto;
+    width:30%;
+}

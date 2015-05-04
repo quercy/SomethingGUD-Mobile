@@ -58,7 +58,12 @@ $(document).ready(function() {
                 CartController.addToCart(product_id,quantity);
                 $.mobile.back();
             });
+
+        };
+
+        var get_categories = function() {
             $.get('/api/products/categories').success(function(data) {
+                $("#categories-list").empty();
                 if(data.length && data != 'null') {
                     data = JSON.parse(data);
                     var html = '';
@@ -120,7 +125,7 @@ $(document).ready(function() {
 
         // Public methods
         return {
-            reconstructGrid : function(){browseUpdate();}
+            reconstructGrid : function(){browseUpdate(); get_categories();}
         }
     }());
 
@@ -261,8 +266,8 @@ $(document).ready(function() {
                         $.mobile.navigate('#browse');
                     }
                     else {
-                        // @todo unvalidate
-                        alert("bad login");
+                        errors = { email: "Incorrect email or password." };
+                        $sign_in_form.validate().showErrors(errors);
                     }
 
 
@@ -287,13 +292,18 @@ $(document).ready(function() {
                 }).
                 success( function(data) {
                     //data=JSON.parse(data);
-                    Model.setKey(data);
-                    console.log('success' + data);
-                    $.mobile.navigate('#browse');
+                    if(data != 'email exists') {
+                        Model.setKey(data);
+                        console.log('success' + data);
+                        $.mobile.navigate('#browse');
+                    }
+                    else {
+                        errors = { email: "Email already exists." };
+                        $register_form.validate().showErrors(errors);
+                    }
+
                 }).
                 error( function(data) {
-                    console.log(data);
-                    console.log('error ' + data);
                 }).
                 always( function() {
 
