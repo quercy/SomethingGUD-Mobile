@@ -104,8 +104,6 @@
 </div>
 
 <div data-role="page" data-quicklinks="true" id="browse" data-position="left" data-display="reveal">
-
-
     <div data-role="header" style="overflow:hidden;">
         <a href="#menu-left" data-icon="home" class="ui-btn-left">Menu</a>
         <h1>Header</h1>
@@ -117,10 +115,20 @@
                     <div data-role="date" data-inline="true"></div>
                 </div>
             </div>
-
+            <div data-role="collapsible" data-collapsed="true" id="categories-list-wrapper">
+                <h4>Categories</h4>
+                <ul data-role="listview" id="categories-list">
+                    <li><a href="#">Meat</a></li>
+                    <li><a href="#">Vegetables</a></li>
+                    <li><a href="#">Soap</a></li>
+                </ul>
+            </div>
+            <form>
+                <input data-type="search" id="filter-grid-input">
+            </form>
         </div>
 
-        <div class="ui-grid-b ui-responsive" data-filter="true" id="item-grid">
+        <div class="ui-grid-b ui-responsive" data-filter="true" id="item-grid" data-input="#filter-grid-input">
         </div>
     </div>
     <div data-role="footer">
@@ -138,6 +146,7 @@
         <div id="item-detail-image"></div>
         <div id="item-detail-description"></div>
         <div id="item-detail-price"></div>
+
         <div id="item-detail-quantity">
             <div data-role="fieldcontain">
             <label for="quantity">Quantity:</label><input id="quantity" type="number" min="1" max="50">

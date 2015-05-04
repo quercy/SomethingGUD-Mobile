@@ -20,14 +20,10 @@ $app->get('/test', function() use ($model) {
 
 // otherwise, it's an api call
 // @todo force https
-$app->get('/api/products', function() use ($model) {
-    $products = $model->listAllProducts();
-    echo json_encode($products);
-});
 
-$app->post('/api/authenticate', function() use ($model) {
-    $key = isset($_POST['session_key']) ? $_POST['session_key'] : '';
-    if( $key != '') {
+$app->post('/api/authenticate', function() use ($model, $app) {
+    $key = $app->request->post('session_key');
+    if(!is_null($key)) {
         return $model->authenticateKey($key);
     }
     else {
@@ -35,22 +31,55 @@ $app->post('/api/authenticate', function() use ($model) {
     }
 });
 
-$app->post('/api/authenticate/login', function() use($model) {
-    $user_email = isset($_POST['user_email']) ?$_POST['user_email'] :'';
-    $password = isset($_POST['password']) ? $_POST['password'] :'';
-//    echo("$user_email, $password");
-    var_dump ($model->login($user_email, md5($password)));
+$app->post('/api/authenticate/login', function() use($model, $app) {
+    $user_email = $app->request->post('username');
+    $password = $app->request->post('password');
+    echo json_encode($model->login($user_email, md5($password)));
 });
 
-$app->post('/api/authenticate/logout', function() use($model) {
-    $key = isset($_POST['session_key']) ? $_POST['session_key'] : '';
-    if($key != '') {
+$app->post('/api/authenticate/logout', function() use($model, $app) {
+    $key = $app->getCookie('session');
+    if(!is_null($key)) {
         $model->destroyKey($key);
         return true;
     }
     else {
         return false;
     }
+});
+
+$app->get('/api/products', function() use ($model, $app) {
+    $key = $app->getCookie('session');
+    if(!is_null($key)) {
+        if($model->authenticateKey($key) != false) {
+            $products = $model->listAllProducts();
+            echo json_encode($products);
+        }
+        else {
+            return null;
+        }
+    }
+    else {
+            return null;
+    }
+
+});
+
+$app->get('/api/products/:id', function($id) use ($model, $app) {
+    $key = $app->getCookie('session');
+    if(!is_null($key)) {
+        if($model->authenticateKey($key) != false) {
+            $product = $model->getProduct($id);
+            echo json_encode($product);
+        }
+        else {
+            return null;
+        }
+    }
+    else {
+        return null;
+    }
+
 });
 
 

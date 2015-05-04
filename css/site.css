@@ -137,3 +137,11 @@
     text-align:center;
     margin: 10px auto 10px auto;
 }
+
+#categories-list-wrapper {
+    margin:10px;
+}
+
+#item-view-header form {
+    margin:10px;
+}

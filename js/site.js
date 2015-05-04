@@ -14,14 +14,6 @@ $(document).ready(function() {
         $("#menu-left").panel().enhanceWithin();
     });
 
-    //$sign_in_form.on('login', function() {
-    //    BrowseController.reconstructGrid();
-    //});
-    //$( window ).on( "navigate", function(event,data) {
-    //    console.log(event);
-    //    console.log(data);
-    //});
-
     $( document ).on( "pagechange", function( event, ui ) { // okay
         if(event.currentTarget.URL.split("/").slice(-1) == "#browse") {
             BrowseController.reconstructGrid();
@@ -60,6 +52,9 @@ $(document).ready(function() {
                 // @todo close dialog
                 // @todo add to cart
             });
+            $("#categories-list li a").click(function() {
+                $("#filter-grid-input").val($(this).text()).trigger('keyup');
+            });
         };
 
         var update_date = function(date_string) {
@@ -95,8 +90,10 @@ $(document).ready(function() {
             for(var i = 0; i < products.length; i++) {
                 var letter = String.fromCharCode(i%number_of_columns + 97); // repeats abc, etc - for the ui-block class
                 grid_html += '<div class="ui-block-'+letter+'"><div class="ui-body ui-body-d grid-item">';
+                grid_html += '<div id="item-detail-hidden-tags" class="ui-hidden-accessible">'+products[i]['tags'].join(" ")+'</div>';
                 grid_html += '<h3>'+products[i]['product_name']+'</h3>';
                 grid_html += '<a href="#item-detail" data-item-id="'+i+'" class="ui-shadow ui-btn ui-corner-all ui-btn-inline" data-transition="pop"><img src="'+products[i]['image_thumb_url'] + '"></a></div></div>';
+
             }
 
             $grid.append(grid_html).hide().fadeIn().find('a').click(function(evt) {
@@ -172,34 +169,41 @@ $(document).ready(function() {
             $.ajax(
                 {
                     beforeSend: function() { $.mobile.loading('show'); }, //Show spinner
-                    url: '',
+                    url: '/api/authenticate/login',
                     dataType: 'json',
+                    method: 'post',
                     data: submit_data
                 }).
                 success(function(data) {
-                    // sign in
-                    $sign_in_form.trigger('login');
-                    // if server returns a session id, set it as the current cookie
-                    data = JSON.parse(data);
-                    console.log('success: ' + data);
+                    if(data != false) {
+                        $sign_in_form.trigger('login');
+                        console.log('success: ' + data);
+                        Model.setKey(data);
 
-                    Model.setKey(data.session);
-                    //document.cookie = "session=" + data.session;
+                        $.mobile.navigate('#browse');
+                    }
+                    else {
+                        alert("bad login");
+                    }
+
+
                 }).
                 error( function(data) {
                     console.log('error ' + data);
                 }).
                 always( function() {
-                    var data = {};
-                    data.session = "1234";
-                    Model.setKey(data.session);
-                    $sign_in_form.trigger('login');
-                    console.log('always');
-                    setTimeout(function() {
-                        $.mobile.loading('hide', {
-                        });
-                        $.mobile.navigate('#browse');
-                    }, 600);
+                    $.mobile.loading('hide', {
+                    });
+                    //var data = {};
+                    //data.session = "1234";
+                    //Model.setKey(data.session);
+                    //$sign_in_form.trigger('login');
+                    //console.log('always');
+                    //setTimeout(function() {
+                    //    $.mobile.loading('hide', {
+                    //    });
+                    //    $.mobile.navigate('#browse');
+                    //}, 600);
                 });
         };
 

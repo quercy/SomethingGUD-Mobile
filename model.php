@@ -34,9 +34,30 @@ class SG_Model {
     }
 
     public function listAllProducts() {
-        $q = $this->db->query("SELECT * FROM `products`;");
+        $q = $this->db->query("SELECT * FROM `products`");
+        $results = $q->fetchAll(PDO::FETCH_ASSOC);
+        foreach($results as &$result) {
+            $result['tags'] = $this->getTagsForProduct($result['product_id']);
+        }
+        return $results;
+    }
+
+    private function getTagsForProduct($id) {
+        $return = [];
+        $q = $this->db->query("SELECT `tag_text` FROM `tags`
+        INNER JOIN `product_tags` ON `tags`.`tag_id` = `product_tags`.`tag_id`
+        WHERE `product_tags`.`product_id` = $id;");
+        $results = $q->fetchAll(PDO::FETCH_ASSOC);
+        foreach($results as $result) {
+            $return[] = $result['tag_text'];
+        }
+        return $return;
+    }
+
+    public function getProduct($id) {
+        $q = $this->db->query("SELECT * FROM `products` WHERE `product_id` = $id;");
         $result = $q->fetchAll(PDO::FETCH_ASSOC);
-        return $result;
+        return array_pop($result);
     }
 
     public function login($user_email, $password) {
@@ -96,7 +117,8 @@ class SG_Model {
         return $this->db->lastInsertId();
     }
     public function authenticateKey($key) {
-        $q = $this->db->query("SELECT * FROM `sessions` WHERE `public_session_id` = $key;");
+        $q = $this->db->query("SELECT * FROM `sessions` WHERE `public_session_id` = '$key';");
+        $q->execute();
         $result = $q->fetchAll(PDO::FETCH_ASSOC);
         if(sizeof($result) > 0) {
             return $result[0]['public_session_id'];
