@@ -115,6 +115,7 @@ $(document).ready(function() {
 
     var CartController = (function() {
         var items = [];
+        var $table = $("#cart-table");
 
         var constructor = function() {
 
@@ -147,12 +148,36 @@ $(document).ready(function() {
             //
             //    }
             //}
+            var tabletext= '';
+            $table.find('tbody').empty();
+            console.log('refreshing');
+            for(var i = 0; i < items.length; i++ ) {
+                var index = i;
+                $.get('/api/products/' + items[i][0]).success(function(data) {
+                    data = JSON.parse(data);
+                    $table.find('tbody').append('<tr><td class="qty"></td><td>'+data['product_name']+'</td><td>'+data['product_price'] + '</td></tr>');
+                }).always(function() {
+                    var index = 0;
+                    $table.find('.qty').each(function() {
+                        $(this).html(items[index++][1]);
+                    })
+                });
+            }
         };
 
         // public methods
         return {
             addToCart : function(item_id, quantity) {
-                items.push([item_id, quantity]);
+                var added = false;
+                for(var i = 0; i < items.length; i++) {
+                    if(items[i][0] == String(item_id)) {
+                        items[i][1] = String(parseInt(items[i][1]) + parseInt(quantity));
+                        added = true;
+                    }
+                }
+                if(added == false) {
+                    items.push([item_id, quantity]);
+                }
                 refreshCart();
             }
         }
