@@ -126,10 +126,12 @@
     font-family: "museo";
     margin:0px;
 }
-
+#item-detail-title h2 {
+    margin:0px;
+    font-family:"museo";
+}
 #item-detail-title {
     text-align:center;
-    font-family:"museo";
 }
 #item-detail-image {
     text-align:center;

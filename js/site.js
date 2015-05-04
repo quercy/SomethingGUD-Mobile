@@ -35,6 +35,7 @@ $(document).ready(function() {
         var shopping_date = new Date(Date.now());
         var $change_date_link = $("#change-date");
         var $date_pick_div = $("#pick-date");
+        var $detail = $("#item-detail");
         var number_of_columns = 3;
         var products;
 
@@ -50,6 +51,14 @@ $(document).ready(function() {
             $change_date_link.on('click', function(e) {
                 e.preventDefault();
                 $date_pick_div.slideDown();
+            });
+            $("#item-detail-add-to-cart").click(function(e){
+                e.preventDefault();
+                var quantity = $("#quantity").val();
+                var product_id = $detail.data('product-id');
+                CartController.addToCart(product_id,quantity);
+                // @todo close dialog
+                // @todo add to cart
             });
         };
 
@@ -91,12 +100,12 @@ $(document).ready(function() {
             }
 
             $grid.append(grid_html).hide().fadeIn().find('a').click(function(evt) {
-                var $detail = $("#item-detail");
                 var index = this.getAttribute('data-item-id');
-                $detail.find('#item-detail-title').html(products[index]['product_name']);
+                $detail.find('#item-detail-title').html('<h2>'+products[index]['product_name']+'</h2>');
                 $detail.find('#item-detail-image').html('<img src="'+products[index]['image_full_url']+'"></img>');
                 $detail.find('#item-detail-description').html(products[index]['product_description']);
                 $detail.find('#item-detail-price').html('$'+products[index]['product_price'] + ' / ' + products[index]['product_price_per']);
+                $detail.data('product-id',products[index]['product_id']);
             });
         };
 
@@ -105,7 +114,51 @@ $(document).ready(function() {
         // Public methods
         return {
             reconstructGrid : function(){browseUpdate();}
-            //updateGrid : function() {updateGrid();}
+        }
+    }());
+
+    var CartController = (function() {
+        var items = [];
+
+        var constructor = function() {
+
+        };
+
+        var refreshCart = function() {
+            console.log(items);
+            items.sort();
+            var len = items.length;
+            // My attempt to solve duplicate items: not working
+            //for(var i = 0; i < items.length; i++) {
+            //    console.log(items);
+            //    //console.log('i is ' + i);
+            //    if(i+1 < len) { // if there's an item past this one
+            //        //console.log('i is less than ' + len);
+            //        while(items[i][0] == items[i+1][0]) {
+            //            //console.log('matching');
+            //            items[i][1] = String(parseInt(items[i][1]) + parseInt(items[i+1][1]));
+            //            //console.log('items is ' + items.slice(0,i));
+            //            console.log(items);
+            //            var items_new = items.slice(0,i);
+            //            console.log(items);
+            //            len--;
+            //            if(i + 1 < len) {
+            //                console.log(items);
+            //                items_new = items.concat(items.slice(i+1));
+            //            }
+            //            items = items_new;
+            //        }
+            //
+            //    }
+            //}
+        };
+
+        // public methods
+        return {
+            addToCart : function(item_id, quantity) {
+                items.push([item_id, quantity]);
+                refreshCart();
+            }
         }
     }());
 
