@@ -117,3 +117,21 @@
 .grid-item img {
     width:100%;
 }
+
+#item-detail-image img {
+    width:80%;
+}
+
+.grid-item {
+    font-family: "museo";
+    margin:0px;
+}
+
+#item-detail-title {
+    text-align:center;
+    font-family:"museo";
+}
+#item-detail-image {
+    text-align:center;
+    margin: 10px auto 10px auto;
+}

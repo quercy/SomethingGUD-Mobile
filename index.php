@@ -17,7 +17,7 @@ $app->get('/test', function() use ($database) {
 });
 
 // otherwise, it's an api call
-
+// @todo force https
 $app->get('/api/products', function() use ($database) {
     $products = $database->listAllProducts();
     echo json_encode($products);

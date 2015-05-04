@@ -85,9 +85,19 @@ $(document).ready(function() {
             var grid_html = "";
             for(var i = 0; i < products.length; i++) {
                 var letter = String.fromCharCode(i%number_of_columns + 97); // repeats abc, etc - for the ui-block class
-                grid_html += '<div class="ui-block-'+letter+'"><div class="ui-body ui-body-d grid-item"><div>'+products[i]['product_name']+'</div><img src="'+products[i]['image_thumb_url'] + '"></div></div>';
+                grid_html += '<div class="ui-block-'+letter+'"><div class="ui-body ui-body-d grid-item">';
+                grid_html += '<h3>'+products[i]['product_name']+'</h3>';
+                grid_html += '<a href="#item-detail" data-item-id="'+i+'" class="ui-shadow ui-btn ui-corner-all ui-btn-inline" data-transition="pop"><img src="'+products[i]['image_thumb_url'] + '"></a></div></div>';
             }
-            $grid.append(grid_html).hide().fadeIn();
+
+            $grid.append(grid_html).hide().fadeIn().find('a').click(function(evt) {
+                var $detail = $("#item-detail");
+                var index = this.getAttribute('data-item-id');
+                $detail.find('#item-detail-title').html(products[index]['product_name']);
+                $detail.find('#item-detail-image').html('<img src="'+products[index]['image_full_url']+'"></img>');
+                $detail.find('#item-detail-description').html(products[index]['product_description']);
+                $detail.find('#item-detail-price').html('$'+products[index]['product_price'] + ' / ' + products[index]['product_price_per']);
+            });
         };
 
         constructor();
@@ -162,7 +172,7 @@ $(document).ready(function() {
             }
             else {
                 session_key = try_session;
-                //$.mobile.navigate("#browse"); ?????
+                $.mobile.navigate("#browse");
             }
         };
 

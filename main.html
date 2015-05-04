@@ -26,6 +26,8 @@
     <script src="js/jquery.validate.min.js"></script>
     <script src="js/jquery.mobile.datepicker.js"></script>
     <script src="js/site.js"></script>
+    <script src="//use.typekit.net/xpr0sdn.js"></script>
+    <script>try{Typekit.load();}catch(e){}</script>
 
 </head>
 <body>
@@ -119,30 +121,33 @@
         </div>
 
         <div class="ui-grid-b ui-responsive" data-filter="true" id="item-grid">
-            <!--<div class="ui-block-a grid-item">-->
-                <!--<div class="ui-body ui-body-d"> Block 1</div>-->
-            <!--</div>-->
-            <!--<div class="ui-block-b grid-item">-->
-                <!--<div class="ui-body ui-body-d"> Block 2</div>-->
-            <!--</div>-->
-            <!--<div class="ui-block-c grid-item">-->
-                <!--<div class="ui-body ui-body-d"> Block 3</div>-->
-            <!--</div>-->
-
-            <!--<div class="ui-block-a grid-item">-->
-                <!--<div class="ui-body ui-body-d"> Block 4</div>-->
-            <!--</div>-->
-            <!--<div class="ui-block-b grid-item">-->
-                <!--<div class="ui-body ui-body-d"> Block 5</div>-->
-            <!--</div>-->
-            <!--<div class="ui-block-c grid-item">-->
-                <!--<div class="ui-body ui-body-d"> Block 6</div>-->
-            <!--</div>-->
-
         </div>
     </div>
     <div data-role="footer">
 
+    </div>
+</div>
+
+<div data-role="page" data-dialog="true" id="item-detail">
+    <div data-role="header" id="item-detail-header">
+        <h1>Item Detail</h1>
+    </div>
+
+    <div data-role="main" class="ui-content">
+        <div id="item-detail-title"></div>
+        <div id="item-detail-image"></div>
+        <div id="item-detail-description"></div>
+        <div id="item-detail-price"></div>
+        <div id="item-detail-quantity">
+            <div data-role="fieldcontain">
+            <label for="quantity">Quantity:</label><input id="quantity" type="number" min="1" max="50">
+                </div>
+        </div>
+        <a href="#" id="item-detail-add-to-cart" class="ui-btn ui-shadow ui-btn-corner-all">Add to Cart</a>
+    </div>
+
+    <div data-role="footer">
+        <!--<h1>Footer Text In Dialog</h1>-->
     </div>
 </div>
 
