@@ -158,6 +158,21 @@ class SG_Model {
         }
     }
 
+    public function getUserInfo($key) {
+        $q = $this->db->query("SELECT `users`.`user_id`, `user_email`, `address_id`, `first_name`, `last_name`, `address_line_1`, `address_line_2`, `city`, `state`, `zip` FROM `users`
+        INNER JOIN `sessions` ON `users`.`user_id` = `sessions`.`user_id`
+        INNER JOIN `addresses` ON `addresses`.`user_id` = `sessions`.`user_id`
+        WHERE `public_session_id` = '$key';");
+        $q->execute();
+        $result = $q->fetchAll(PDO::FETCH_ASSOC);
+        if(sizeof($result) > 0) {
+            return array_pop($result);
+        }
+        else {
+            return null;
+        }
+    }
+
     private function getSessionData($key) {
         $q = $this->db->query("SELECT * FROM `sessions` WHERE `public_session_id` = '$key';");
         $result = $q->fetchAll(PDO::FETCH_ASSOC);

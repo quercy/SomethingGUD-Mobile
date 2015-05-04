@@ -151,6 +151,23 @@ $app->post('/api/users', function() use ($model, $app) {
     }
 });
 
+$app->get('/api/user', function() use ($model, $app) {
+    $key = $app->getCookie('session');
+//    echo($cart);
+    if(!is_null($key)) {
+        if($model->authenticateKey($key) != false) {
+            $ud = $model->getUserInfo($key);
+            echo json_encode($ud);
+        }
+        else {
+            return null;
+        }
+    }
+    else {
+        return null;
+    }
+});
+
 
 $app->run();
 

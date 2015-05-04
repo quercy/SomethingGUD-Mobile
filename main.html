@@ -164,7 +164,7 @@
 
     <div data-role="header" style="overflow:hidden;">
         <a href="#menu-left" data-icon="home" class="ui-btn-left">Menu</a>
-        <h1>Header</h1>
+        <h1>Cart</h1>
     </div><!-- /header -->
     <div role="main" class="ui-content">
         <table data-role="table" id="cart-table" data-mode="reflow" class="ui-responsive">
@@ -191,11 +191,54 @@
 <div data-role="page" data-quicklinks="true" id="account" data-position="left" data-display="reveal">
     <div data-role="header" style="overflow:hidden;">
         <a href="#menu-left" data-icon="home" class="ui-btn-left">Menu</a>
-        <h1>Header</h1>
+        <h1>Account Information</h1>
     </div><!-- /header -->
     <div role="main" class="ui-content">
-        <div id="account-information"></div>
+        <div id="account-information">
+            <label for="account-user_email">Email:</label>
+            <input name="text-basic" id="account-user_email" value="" type="email">
+
+            <label for="account-first_name">First Name:</label>
+            <input name="text-basic" id="account-first_name" value="" type="text">
+
+            <label for="account-last_name">Last name:</label>
+            <input name="text-basic" id="account-last_name" value="" type="text">
+
+            <label for="account-address_line_1">Address 1:</label>
+            <input name="text-basic" id="account-address_line_1" value="" type="text">
+
+            <label for="account-address_line_2">Address 2:</label>
+            <input name="text-basic" id="account-address_line_2" value="" type="text">
+
+            <label for="account-city">City:</label>
+            <input name="text-basic" id="account-city" value="" type="text">
+
+            <label for="account-state">State:</label>
+            <input name="text-basic" id="account-state" value="" type="text">
+
+            <label for="account-zip">Last name:</label>
+            <input name="text-basic" id="account-zip" value="" type="number">
+            <a href="#" class="ui-btn ui-shadow ui-btn-corner-all" id="account-save-button">Save</a>
+
+        </div>
         <a href="#" class="ui-btn ui-shadow ui-btn-corner-all" id="logout-button">Logout</a>
+    </div>
+    <div data-role="footer">
+
+    </div>
+</div>
+
+<div data-role="page" data-quicklinks="true" id="checkout" data-position="left" data-display="reveal">
+    <div data-role="header" style="overflow:hidden;">
+        <a href="#menu-left" data-icon="home" class="ui-btn-left">Menu</a>
+        <h1>Checkout</h1>
+    </div><!-- /header -->
+    <div role="main" class="ui-content">
+        <label for="allergies">Allergies:</label>
+        <input name="text-basic" id="allergies" value="" type="text">
+        <label for="instructions">Delivery Instructions:</label>
+        <input name="text-basic" id="instructions" value="" type="text">
+        <a href="#" class="ui-btn ui-shadow ui-btn-corner-all ui-disabled" id="place-order-button">Check Out</a>
     </div>
     <div data-role="footer">
 

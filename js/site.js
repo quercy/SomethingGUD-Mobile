@@ -26,6 +26,85 @@ $(document).ready(function() {
         }
     });
 
+    var Model = (function() {
+        var _this = this;
+        var session_key;
+
+        var constructor = function () {
+            var try_session = readCookie("session");
+            if(try_session == undefined || try_session == "") {
+                $.mobile.navigate("#landing");
+            }
+            else {
+                session_key = try_session;
+                $.mobile.navigate("#browse");
+            }
+        };
+
+        function createCookie(name,value,days) {
+            if (days) {
+                var date = new Date();
+                date.setTime(date.getTime()+(days*24*60*60*1000));
+                var expires = "; expires="+date.toGMTString();
+            }
+            else var expires = "";
+            document.cookie = name+"="+value+expires+"; path=/";
+        }
+
+        function readCookie(name) {
+            var nameEQ = name + "=";
+            var ca = document.cookie.split(';');
+            for(var i=0;i < ca.length;i++) {
+                var c = ca[i];
+                while (c.charAt(0)==' ') c = c.substring(1,c.length);
+                if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+            }
+            return null;
+        }
+
+        function eraseCookie(name) {
+            createCookie(name,"",-1);
+        }
+
+        constructor();
+
+        // Public methods
+        return {
+            setKey : function(key) {
+                //console.log("setting key to " + key);
+                session_key = key;
+                createCookie('session', session_key, 7);
+            },
+            getKey : function() {
+                return session_key;
+            },
+            getAllProducts : function(callback) {
+                return $.get('/api/products');
+            },
+            getProductsForCategory : function(category, callback) {
+
+            },
+            logout : function() {
+                eraseCookie("session");
+                $.mobile.navigate("#landing");
+            },
+            checkAuth : function() {
+                $.post('/api/authenticate', {session_key : session_key}).success(function(data) {
+                    if(data == 'null' ) {
+                        console.log('not authenticated');
+                        return false;
+                        Model.logout();
+                        //$.navigate('#landing');
+                    }
+                    else {
+                        return true;
+                        console.log('authenticated');
+                    }
+                });
+            }
+        }
+    }());
+
     var BrowseController = (function() {
         var _this = this;
         var $grid = $("#item-grid");
@@ -328,84 +407,35 @@ $(document).ready(function() {
         }
     }());
 
-    var Model = (function() {
+    var AccountController = (function() {
         var _this = this;
-        var session_key;
-
         var constructor = function () {
-            var try_session = readCookie("session");
-            if(try_session == undefined || try_session == "") {
-                $.mobile.navigate("#landing");
-            }
-            else {
-                session_key = try_session;
-                $.mobile.navigate("#browse");
-            }
+            getAccountInfo();
         };
 
-        function createCookie(name,value,days) {
-            if (days) {
-                var date = new Date();
-                date.setTime(date.getTime()+(days*24*60*60*1000));
-                var expires = "; expires="+date.toGMTString();
-            }
-            else var expires = "";
-            document.cookie = name+"="+value+expires+"; path=/";
-        }
+        var getAccountInfo = function() {
+            $.get('/api/user').success(function(data) {
+                data = JSON.parse(data);
+                $("#account-user_email").val(data['user_email']);
+                $("#account-first_name").val(data['first_name']);
+                $("#account-last_name").val(data['last_name']);
+                $("#account-address_line_1").val(data['address_line_1']);
+                $("#account-address_line_2").val(data['address_line_2']);
+                $("#account-city").val(data['city']);
+                $("#account-state").val(data['state']);
+                $("#account-zip").val(data['zip']);
+            });
+        };
 
-        function readCookie(name) {
-            var nameEQ = name + "=";
-            var ca = document.cookie.split(';');
-            for(var i=0;i < ca.length;i++) {
-                var c = ca[i];
-                while (c.charAt(0)==' ') c = c.substring(1,c.length);
-                if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
-            }
-            return null;
-        }
-
-        function eraseCookie(name) {
-            createCookie(name,"",-1);
-        }
 
         constructor();
 
         // Public methods
         return {
-            setKey : function(key) {
-                //console.log("setting key to " + key);
-                session_key = key;
-                createCookie('session', session_key, 7);
-            },
-            getKey : function() {
-                return session_key;
-            },
-            getAllProducts : function(callback) {
-                return $.get('/api/products');
-            },
-            getProductsForCategory : function(category, callback) {
-
-            },
-            logout : function() {
-                eraseCookie("session");
-                $.mobile.navigate("#landing");
-            },
-            checkAuth : function() {
-                $.post('/api/authenticate', {session_key : session_key}).success(function(data) {
-                    if(data == 'null' ) {
-                        console.log('not authenticated');
-                        return false;
-                        Model.logout();
-                        //$.navigate('#landing');
-                    }
-                    else {
-                        return true;
-                        console.log('authenticated');
-                    }
-                });
-            }
         }
     }());
+
+
 
     $("#logout-button").click(function(evt) {
         evt.preventDefault();
