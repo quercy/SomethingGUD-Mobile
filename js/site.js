@@ -90,15 +90,17 @@ $(document).ready(function() {
             },
             checkAuth : function() {
                 $.post('/api/authenticate', {session_key : session_key}).success(function(data) {
-                    if(data == 'null' ) {
+                    if(data == 'null' || data == '') {
                         console.log('not authenticated');
+                        //Model.logout();
                         return false;
-                        Model.logout();
+
                         //$.navigate('#landing');
                     }
                     else {
-                        return true;
+
                         console.log('authenticated');
+                        return true;
                     }
                 });
             }

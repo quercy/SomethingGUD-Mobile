@@ -37,7 +37,8 @@ class SG_Model {
         $q = $this->db->query("SELECT * FROM `products`");
         $results = $q->fetchAll(PDO::FETCH_ASSOC);
         foreach($results as &$result) {
-            $result['tags'] = $this->getTagsForProduct($result['product_id']);
+            $tags = $this->getTagsForProduct($result['product_id']);
+            $result['tags'] = is_null($tags) ? array() : $tags;
         }
         return $results;
     }
