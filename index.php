@@ -1,11 +1,10 @@
 <?php
 
 require 'vendor/autoload.php';
-
 require 'model.php';
 
 $model = new SG_Model();
-$app = new \Slim\Slim(['debug' => true]);
+$app = new \Slim\Slim(['debug' => false]);
 
 // Main route is to return the client
 $app->get('/', function () {
@@ -20,20 +19,25 @@ $app->get('/api/test', function() use ($model, $app) {
     echo("test");
 });
 
+/**
+ * @param $app
+ * @param $model
+ * @return key or exits
+ */
 $cookie_auth = function ($app, $model) {
     $sess_key = $app->getCookie('session');
     if(!is_null($sess_key)) {
         $auth_key = $model->authenticateKey($sess_key);
         if($auth_key != null)
-        return $auth_key;
+            return $auth_key;
         else
             $app->halt(403);
+            return null;
     }
     else {
         $app->halt(403);
+        return null;
     }
-    return function() {};
-
 };
 
 // otherwise, it's an api call
@@ -83,6 +87,7 @@ $app->get('/api/products/:id', function($id) use ($model, $app, $cookie_auth) {
 $app->post('/api/cart', function() use ($model, $app, $cookie_auth) {
     $key = $cookie_auth($app, $model);
     $cart = $app->request->post('cart_data');
+    // @todo validate
     $model->updateCart($key, $cart);
     $app->halt(200);
 });
@@ -101,7 +106,7 @@ $app->post('/api/users', function() use ($model, $app) {
         'last_name' => $app->request->post('last_name'),
         'zip' => $app->request->post('zip'),
     ];
-    // @todo server-side validation
+    // @todo validate
     if($data['user_email'] != '' && !is_null($data['user_email']))
         echo json_encode($model->addUser($data));
     else {

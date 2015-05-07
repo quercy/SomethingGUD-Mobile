@@ -7,24 +7,8 @@ $(document).ready(function() {
     var menu = '<div data-role="panel" id="menu-left" data-display="push" data-theme="a" data-position="left"> <ul data-role="listview"> <li><a href="#browse" data-rel="close">Browse Items</a></li> <li><a href="#cart" data-rel="close">Shopping cart</a></li> <li><a href="#account" data-rel="close">Account Information</a></li> </ul> </div>';
     var $sign_in_form = $("#sign-in-form");
     var $register_form = $("#register-form");
+    var $body = $('body');
     //setTimeout(function () {   window.scrollTo(0, 1); }, 1000); // supposed to hide safarty navbar
-
-    $(document).one('pagebeforecreate', function() {
-        $.mobile.pageContainer.prepend(menu);
-        $("#menu-left").panel().enhanceWithin();
-    });
-
-    $( document ).on( "pagechange", function( event, ui ) { // okay
-        if(Model.checkAuth() == false) {
-            $.navigate('#landing');
-        }
-        if(event.currentTarget.URL.split("/").slice(-1) == "#browse") {
-            BrowseController.reconstructGrid();
-        }
-
-        if(event.currentTarget.URL.split("/").slice(-1) == "#cart") {
-        }
-    });
 
     var Model = (function() {
         var _this = this;
@@ -32,12 +16,15 @@ $(document).ready(function() {
 
         var constructor = function () {
             var try_session = readCookie("session");
-            if(try_session == undefined || try_session == "") {
-                $.mobile.navigate("#landing");
+            if(try_session == undefined || try_session == "" | try_session == null) {
+                //$.mobile.navigate("#landing");
+                //$body.pagecontainer('change', '#landing');
             }
             else {
                 session_key = try_session;
-                $.mobile.navigate("#browse");
+                console.log('read session key');
+                //$.mobile.navigate("#browse");
+                //$body.pagecontainer('change', '#browse');
             }
         };
 
@@ -78,34 +65,50 @@ $(document).ready(function() {
             getKey : function() {
                 return session_key;
             },
-            getAllProducts : function(callback) {
-                return $.get('/api/products');
+            getAllProducts : function(success_callback, fail_callback) {
+                $.get('/api/products').success(success_callback).fail(fail_callback);
             },
             getProductsForCategory : function(category, callback) {
 
             },
             logout : function() {
                 eraseCookie("session");
-                $.mobile.navigate("#landing");
+                //$.mobile.navigate("#landing");
+                $body.pagecontainer('change', '#landing');
             },
             checkAuth : function() {
                 $.post('/api/authenticate', {session_key : session_key}).success(function(data) {
-                    if(data == 'null' || data == '') {
-                        console.log('not authenticated');
-                        //Model.logout();
-                        return false;
-
-                        //$.navigate('#landing');
-                    }
-                    else {
-
-                        console.log('authenticated');
-                        return true;
-                    }
+                    console.log('authenticated');
+                    return true;
+                }).fail(function(data) {
+                    console.log('not authenticated');
+                    console.log(data);
+                    return false;
                 });
             }
         }
     }());
+
+    $(document).one('pagebeforecreate', function() {
+        $.mobile.pageContainer.prepend(menu);
+        $("#menu-left").panel().enhanceWithin();
+    });
+
+    $( document ).on( "pagechange", function( event, ui ) { // okay
+        var page = event.currentTarget.URL.split("/").slice(-1);
+        if(page != '#landing' && Model.checkAuth() == false) {
+            $body.pagecontainer('change', '#landing');
+        }
+
+        if(page == "#browse") {
+            BrowseController.reconstructGrid();
+        }
+
+        if(page == "#cart") {
+        }
+    });
+
+
 
     var BrowseController = (function() {
         var _this = this;
@@ -167,14 +170,17 @@ $(document).ready(function() {
 
         var browseUpdate = function (category) {
                 if(products == undefined) {
-                    Model.getAllProducts().success(function (data) {
+                    var success_function = function(data) {
+                        console.log('success getting products');
                         if(data != 'null' && data.length) {
                             products = JSON.parse(data);
                             updateGrid();
                         }
-                    }).always(function () {
-
-                    });
+                    };
+                    var fail_function = function() {
+                        console.log('failure getting products');
+                    };
+                    Model.getAllProducts(success_function, fail_function);
                 }
         };
 
@@ -211,6 +217,7 @@ $(document).ready(function() {
     }());
 
     var CartController = (function() {
+        // @ todo represent the cart items correctly
         var items = [];
         var $table = $("#cart-table");
 
@@ -236,7 +243,7 @@ $(document).ready(function() {
 
         var refreshCart = function() {
             $table.find('tbody').empty();
-            enforceConsistency();
+            //enforceConsistency();
             for(var i = 0; i < items.length; i++ ) {
                 var index;
                 $.get('/api/products/' + items[i][0]).success(function(data) {
@@ -248,26 +255,12 @@ $(document).ready(function() {
                     for(var i = 0; i < items.length; i++) {
                         if($qty.closest('tr').attr('data-product-id') == items[i][0]) {
                             $qty.html(items[i][1]);
-                            //alert(items[index][1]);
                         }
 
                     }
                     initializeRemoveClickEvents();
                 });
             }
-        };
-
-        var enforceConsistency = function() {
-            //items.sort();
-            //console.log(items);
-            //for(var i = 0; i < items.length; i++) {
-            //    if(i < items.length - 1) {
-            //        while (items[i][0] == items[i + 1][0]) {
-            //            items[i][0] = String(parseInt(items[i][0]) + parseInt(items[i + 1][0]));
-            //            items.splice(i + 1, 1);
-            //        }
-            //    }
-            //}
         };
 
         var pullCart = function() {
@@ -287,6 +280,9 @@ $(document).ready(function() {
                     }
                     refreshCart();
                     //console.log(new_ary);
+            }).fail(function(data) {
+                console.log('failed to load cart');
+                console.log(data);
             });
         };
 
@@ -298,7 +294,9 @@ $(document).ready(function() {
                 post_data['cart_data'][i]['quantity'] = items[i][1];
             }
             $.post('/api/cart', post_data).success(function() {
-                //pullCart();
+                console.log('success pushing cart');
+            }).fail(function() {
+                console.log('failure pushing cart');
             });
 
         };
@@ -341,10 +339,11 @@ $(document).ready(function() {
                 success(function(data) {
                     if(data != false) {
                         $sign_in_form.trigger('login');
-                        //console.log('success: ' + data);
+                        console.log('success logging in: ' + data);
                         Model.setKey(data);
 
-                        $.mobile.navigate('#browse');
+                        //$.mobile.navigate('#browse');
+                        $body.pagecontainer('change', '#browse');
                     }
                     else {
                         errors = { email: "Incorrect email or password." };
@@ -376,7 +375,8 @@ $(document).ready(function() {
                     if(data != 'email exists') {
                         Model.setKey(data);
                         console.log('success' + data);
-                        $.mobile.navigate('#browse');
+                        //$.mobile.navigate('#browse');
+                        $body.pagecontainer('change', '#browse');
                     }
                     else {
                         errors = { email: "Email already exists." };
