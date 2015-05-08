@@ -18,13 +18,10 @@ $(document).ready(function() {
             var try_session = readCookie("session");
             if(try_session == undefined || try_session == "" | try_session == null) {
                 //$.mobile.navigate("#landing");
-                //$body.pagecontainer('change', '#landing');
+                $body.pagecontainer('change', '#landing');
             }
             else {
                 session_key = try_session;
-                console.log('read session key');
-                //$.mobile.navigate("#browse");
-                //$body.pagecontainer('change', '#browse');
             }
         };
 
@@ -68,23 +65,30 @@ $(document).ready(function() {
             getAllProducts : function(success_callback, fail_callback) {
                 $.get('/api/products').success(success_callback).fail(fail_callback);
             },
-            getProductsForCategory : function(category, callback) {
-
+            getAllCategories : function(success_callback, fail_callback) {
+                $.get('/api/products/categories').success(success_callback).fail(fail_callback);
             },
             logout : function() {
                 eraseCookie("session");
-                //$.mobile.navigate("#landing");
                 $body.pagecontainer('change', '#landing');
             },
             checkAuth : function() {
-                $.post('/api/authenticate', {session_key : session_key}).success(function(data) {
+                $.post('/api/authenticate', {session_key : session_key}).success(function() {
                     console.log('authenticated');
                     return true;
-                }).fail(function(data) {
+                }).fail(function() {
                     console.log('not authenticated');
-                    console.log(data);
                     return false;
                 });
+            },
+            pullCart : function(success_callback, fail_callback) {
+                $.get('/api/cart').success(function(data){
+                    success_callback(JSON.parse(data) || undefined);
+                }).fail(fail_callback);
+            },
+            pushCart : function(push_data, success_callback, fail_callback) {
+                console.log(push_data);
+                $.post('/api/cart', push_data).success(success_callback).fail(fail_callback);
             }
         }
     }());
@@ -101,10 +105,14 @@ $(document).ready(function() {
         }
 
         if(page == "#browse") {
-            BrowseController.reconstructGrid();
+            BrowseController.activate();
         }
 
         if(page == "#cart") {
+            CartController.activate();
+        }
+        if(page == "#account") {
+            AccountController.activate();
         }
     });
 
@@ -120,9 +128,9 @@ $(document).ready(function() {
         var $detail = $("#item-detail");
         var number_of_columns = 3;
         var products;
+        var constructed = false;
 
-        var constructor = function () {
-            //console.log(shopping_date.toDateString());
+        var createClickEvents = function () {
             update_date();
             $("#filter-grid-input").val("").trigger('keyup');
             $date_pick_div.date({
@@ -142,11 +150,11 @@ $(document).ready(function() {
                 CartController.addToCart(product_id,quantity);
                 $.mobile.back();
             });
-
+            constructed = true;
         };
 
         var get_categories = function() {
-            $.get('/api/products/categories').success(function(data) {
+            var success_function = function(data) {
                 $("#categories-list").empty();
                 if(data.length && data != 'null') {
                     data = JSON.parse(data);
@@ -158,7 +166,11 @@ $(document).ready(function() {
                         $("#filter-grid-input").val($(this).text()).trigger('keyup');
                     });
                 }
-            });
+            };
+            var failure_function = function() {
+
+            };
+            Model.getAllCategories(success_function, failure_function);
         };
 
         var update_date = function(date_string) {
@@ -168,13 +180,16 @@ $(document).ready(function() {
             $date_display.text(shopping_date.toDateString());
         };
 
-        var browseUpdate = function (category) {
+        var browseUpdate = function () {
                 if(products == undefined) {
                     var success_function = function(data) {
                         console.log('success getting products');
                         if(data != 'null' && data.length) {
                             products = JSON.parse(data);
                             updateGrid();
+                        }
+                        if(constructed == false ) {
+                            createClickEvents();
                         }
                     };
                     var fail_function = function() {
@@ -208,11 +223,9 @@ $(document).ready(function() {
             });
         };
 
-        constructor();
-
         // Public methods
         return {
-            reconstructGrid : function(){browseUpdate(); get_categories();}
+            activate : function(){browseUpdate(); get_categories();}
         }
     }());
 
@@ -222,7 +235,6 @@ $(document).ready(function() {
         var $table = $("#cart-table");
 
         var constructor = function() {
-            pullCart();
         };
 
         var initializeRemoveClickEvents = function() {
@@ -235,13 +247,14 @@ $(document).ready(function() {
                         new_ary.push(items[i]);
                     }
                 }
-                //console.log(new_ary);
                 items = new_ary;
                 pushCart();
+                refreshCart();
             });
         };
 
         var refreshCart = function() {
+            // @todo refactor
             $table.find('tbody').empty();
             //enforceConsistency();
             for(var i = 0; i < items.length; i++ ) {
@@ -264,43 +277,41 @@ $(document).ready(function() {
         };
 
         var pullCart = function() {
-            $.get('/api/cart').success(function(data) {
-                if(data != 'null' && data.length) {
-                    data=JSON.parse(data);
-                    console.log(data);
-                    var new_ary = [];
-                        for (var i = 0; i < data.length; i++) {
-                            new_ary[i] = [String(data[i]['product_id']), String(data[i]['quantity'])];
-                        }
-                        items = new_ary;
+            var success_function = function(data) {
+                var new_ary = [];
+                if(data) {
+                    for (var i = 0; i < data.length; i++) {
+                        new_ary[i] = [String(data[i]['product_id']), String(data[i]['quantity'])];
+                    }
+                    items = new_ary;
+                }
+            };
 
-                    }
-                    else {
-                        items = [];
-                    }
-                    refreshCart();
-                    //console.log(new_ary);
-            }).fail(function(data) {
+            var failure_function = function(data) {
                 console.log('failed to load cart');
                 console.log(data);
-            });
+                // @ todo alert
+            };
+            Model.pullCart(success_function, failure_function);
         };
 
         var pushCart = function() {
+            // @todo refactor
             var post_data = {'cart_data' : {}};
             for(var i = 0; i < items.length; i++) {
                 post_data['cart_data'][i] = {};
                 post_data['cart_data'][i]['product_id'] = items[i][0];
                 post_data['cart_data'][i]['quantity'] = items[i][1];
             }
-            $.post('/api/cart', post_data).success(function() {
-                console.log('success pushing cart');
-            }).fail(function() {
-                console.log('failure pushing cart');
-            });
 
+            var success_function = function(data) {
+                console.log('success pushing cart');
+            };
+            var failure_function = function() {
+                console.log('failure pushing cart');
+            };
+            Model.pushCart(post_data, success_function, failure_function);
         };
-        constructor();
         // public methods
         return {
             addToCart : function(item_id, quantity) {
@@ -316,6 +327,9 @@ $(document).ready(function() {
                 }
                 pushCart();
                 refreshCart();
+            },
+            activate : function() {
+                pullCart();
             }
         }
 
@@ -328,6 +342,7 @@ $(document).ready(function() {
         };
 
         var submitLogin = function(submit_data) {
+            // @todo move to model
             $.ajax(
                 {
                     beforeSend: function() { $.mobile.loading('show'); }, //Show spinner
@@ -362,6 +377,8 @@ $(document).ready(function() {
         };
 
         var submitRegister = function(data) {
+
+            // @todo move to model
             $.ajax(
                 {
                     beforeSend: function() { $.mobile.loading('show'); }, //Show spinner
@@ -412,11 +429,12 @@ $(document).ready(function() {
     var AccountController = (function() {
         var _this = this;
         var constructor = function () {
-            getAccountInfo();
         };
 
         var getAccountInfo = function() {
+            // @ todo move to model
             $.get('/api/user').success(function(data) {
+                //console.log(data);
                 data = JSON.parse(data);
                 $("#account-user_email").val(data['user_email']);
                 $("#account-first_name").val(data['first_name']);
@@ -429,11 +447,13 @@ $(document).ready(function() {
             });
         };
 
-
         constructor();
 
         // Public methods
         return {
+            activate : function() {
+                getAccountInfo();
+            }
         }
     }());
 
@@ -443,7 +463,7 @@ $(document).ready(function() {
         evt.preventDefault();
         Model.logout();
     });
-
+    // @todo move to sign in controller
     $sign_in_form.validate({
         rules: {
             'email': {

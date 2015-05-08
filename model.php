@@ -204,23 +204,24 @@ class SG_Model {
 //            $sql2 = "INSERT INTO `cart_products` (cart_id, product_id) VALUES ();";
 //            $q2 = $this->db->prepare($sql2);
 //            $q2->execute();
-
-            $stmt = $this->db->prepare("INSERT INTO `cart_products` (cart_id, product_id, quantity) VALUES (:cart_id, :product_id, :quantity)");
-            $stmt->bindParam(':cart_id', $cart_id);
-            $stmt->bindParam(':product_id', $product_id);
-            $stmt->bindParam(':quantity', $quantity);
-            foreach($product_data as $product_datum) {
+            if(sizeof($product_data) > 0) {
+                $stmt = $this->db->prepare("INSERT INTO `cart_products` (cart_id, product_id, quantity) VALUES (:cart_id, :product_id, :quantity)");
+                $stmt->bindParam(':cart_id', $cart_id);
+                $stmt->bindParam(':product_id', $product_id);
+                $stmt->bindParam(':quantity', $quantity);
+                foreach ($product_data as $product_datum) {
 //                var_dump($product_datum);
-                $cart_id = $session_data['cart_id'];
-                $product_id = $product_datum['product_id'];
-                $quantity = $product_datum['quantity'];
+                    $cart_id = $session_data['cart_id'];
+                    $product_id = $product_datum['product_id'];
+                    $quantity = $product_datum['quantity'];
 //                echo($stmt);
-                $stmt->execute();
+                    $stmt->execute();
+                }
             }
             return true;
         }
         else {
-            return null;
+            return false;
         }
     }
 

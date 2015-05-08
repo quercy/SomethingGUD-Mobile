@@ -19,6 +19,7 @@ $app->get('/api/test', function() use ($model, $app) {
     echo("test");
 });
 
+
 /**
  * @param $app
  * @param $model
@@ -88,8 +89,14 @@ $app->post('/api/cart', function() use ($model, $app, $cookie_auth) {
     $key = $cookie_auth($app, $model);
     $cart = $app->request->post('cart_data');
     // @todo validate
-    $model->updateCart($key, $cart);
-    $app->halt(200);
+    if($model->updateCart($key, $cart)) {
+        $app->halt(200);
+    }
+    else {
+        $app->halt(500);
+    }
+
+
 });
 
 $app->get('/api/cart', function() use ($model, $app, $cookie_auth) {
