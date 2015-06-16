@@ -3,10 +3,15 @@
 require 'vendor/autoload.php';
 require 'model.php';
 
+
+/**
+ * Instantiate model and routes
+ */
 $model = new SG_Model();
 $app = new \Slim\Slim(['debug' => false]);
 
-// Main route is to return the client
+
+// Root and /index return the client app
 $app->get('/', function () {
     readfile("main.html");
 });
@@ -14,16 +19,16 @@ $app->get('/index', function () {
     readfile("main.html");
 });
 
-$app->get('/api/test', function() use ($model, $app) {
-    $app->halt(200);
-    echo("test");
-});
+//$app->get('/api/test', function() use ($model, $app) {
+//    $app->halt(200);
+//});
 
 
 /**
+ * Cookie authentication middleware. Halts the application if not authenticated.
  * @param $app
  * @param $model
- * @return key or exits
+ * @return $auth_key
  */
 $cookie_auth = function ($app, $model) {
     $sess_key = $app->getCookie('session');
@@ -41,16 +46,18 @@ $cookie_auth = function ($app, $model) {
     }
 };
 
-// otherwise, it's an api call
+/**
+ * API routes
+ */
 
 $app->post('/api/authenticate', function() use ($model, $app, $cookie_auth) {
-    echo ($cookie_auth($app,$model));
+    echo ($cookie_auth($app,$model)); // returns the user's session key if successful; otherwise 403
 });
 
 $app->post('/api/authenticate/login', function() use($model, $app) {
     $user_email = $app->request->post('username');
     $password = $app->request->post('password');
-    $response = $model->login($user_email, md5($password));
+    $response = $model->login($user_email, $password);
     if($response !== false) {
         echo json_encode($response);
     }
@@ -94,8 +101,6 @@ $app->post('/api/cart', function() use ($model, $app, $cookie_auth) {
     else {
         $app->halt(500);
     }
-
-
 });
 
 $app->get('/api/cart', function() use ($model, $app, $cookie_auth) {
@@ -112,7 +117,7 @@ $app->post('/api/users', function() use ($model, $app) {
         'last_name' => $app->request->post('last_name'),
         'zip' => $app->request->post('zip'),
     ];
-    // @todo validate
+    // @todo validate better
     if($data['user_email'] != '' && !is_null($data['user_email']))
         echo json_encode($model->addUser($data));
     else {
