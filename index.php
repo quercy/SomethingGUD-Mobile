@@ -42,7 +42,6 @@ $cookie_auth = function ($app, $model) {
 };
 
 // otherwise, it's an api call
-// @todo force https
 
 $app->post('/api/authenticate', function() use ($model, $app, $cookie_auth) {
     echo ($cookie_auth($app,$model));
